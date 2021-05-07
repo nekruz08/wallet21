@@ -294,3 +294,15 @@ func TestService_Reject_success(t *testing.T) {
 	}
 }
 //**********************************************************************************
+func TestService_Repeat_success(t *testing.T) {
+	svc:=newTestService()
+	_,payments,err:=svc.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Errorf("Repeat error = %v",err)
+	}
+	payment:=payments[0]
+	_,err=svc.Repeat(payment.ID)
+	if err != nil {
+		t.Errorf("Repeat(), cant repeat payment, error = %v",err)
+	}
+}
