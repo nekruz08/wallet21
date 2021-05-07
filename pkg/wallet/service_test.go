@@ -306,3 +306,23 @@ func TestService_Repeat_success(t *testing.T) {
 		t.Errorf("Repeat(), cant repeat payment, error = %v",err)
 	}
 }
+//**********************************************************************************
+func TestService_PayFromFavorite_success(t *testing.T) {
+	s := newTestService()
+	_,payments,err:=s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	payment:=payments[0]
+	favorite,err:=s.FavoritePayment(payment.ID,"sadaqa")
+	if err != nil {
+		t.Errorf("PayFromFavorite(), cant repeat payment from favorite, error = %v",err)
+	}
+
+	paymentFavorite,err:=s.PayFromFavorite(favorite.ID)
+	if err != nil {
+		t.Errorf("PayFromFavorite() Error() can't for an favorite(%v), error=%v",paymentFavorite,err)
+	}
+
+}

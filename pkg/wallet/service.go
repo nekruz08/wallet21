@@ -10,11 +10,14 @@ var ErrAmountMustBePositive=errors.New("amount must be greater than zero")
 var ErrAccountNotFound=errors.New("account not found")
 var ErrNotEnoughBalance=errors.New("not enough balance")
 var ErrPaymentNotFound=errors.New("payment not found")
+var ErrFavoriteNotFound = errors.New("favorite not found")
+
 //**********************************************************************************
 type Service struct{
 	nextAccountID int64
 	accounts []*types.Account
 	payments []*types.Payment
+	favorites []*types.Favorite	
 }
 //**********************************************************************************
 // type error interface{
@@ -139,4 +142,43 @@ func (s *Service) Repeat(paymentID string) (*types.Payment,error) {
 		return nil, err
 	}
 	return payment,nil
+}
+//**********************************************************************************
+func (s *Service) FavoritePayment(paymentID string, name string) (*types.Favorite,error) {
+	payment,err:=s.FindPaymentByID(paymentID)
+	if err != nil {
+		return nil, err
+	}
+	favoriteID:=uuid.New().String()
+	newFavorite:=&types.Favorite{
+		ID: favoriteID,
+		AccountID: payment.AccountID,
+		Name: name,
+		Amount: payment.Amount,
+		Category: payment.Category,
+	}
+	s.favorites=append(s.favorites, newFavorite)
+	return newFavorite,nil
+}
+//**********************************************************************************
+func (s *Service) FindFavoriteByID(favoriteID string) (*types.Favorite,error) {
+	for _, favorite := range s.favorites {
+		if favorite.ID==favoriteID{
+			return favorite,nil
+		}
+	}	
+	return nil,ErrFavoriteNotFound
+}
+//**********************************************************************************
+func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment,error) {
+	favorite,err:=s.FindFavoriteByID(favoriteID)
+	if err != nil {
+		return nil, err
+	}
+	payment,err:=s.Pay(favorite.AccountID,favorite.Amount,favorite.Category)
+	if err != nil {
+		return nil, err
+	}
+	return payment,nil
+
 }
